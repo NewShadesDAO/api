@@ -7,7 +7,7 @@ from fastapi import HTTPException
 
 from app.helpers.pfp import extract_contract_and_token_from_string, upload_pfp_url_and_update_profile
 from app.helpers.queue_utils import queue_bg_task
-from app.helpers.w3 import checksum_address, get_nft, get_nft_image_url, get_wallet_short_name, verify_token_ownership
+from app.helpers.w3 import checksum_address, get_nft, get_nft_image_url, verify_token_ownership
 from app.helpers.ws_events import WebSocketServerEvent
 from app.models.base import APIDocument
 from app.models.channel import ChannelReadState
@@ -15,20 +15,15 @@ from app.models.server import ServerMember
 from app.models.user import User
 from app.schemas.servers import ServerMemberUpdateSchema
 from app.schemas.users import UserCreateSchema, UserUpdateSchema
-from app.services.crud import get_item, get_item_by_id, get_items, update_item
+from app.services.crud import create_item, get_item, get_item_by_id, get_items, update_item
 from app.services.websockets import broadcast_server_event, broadcast_user_servers_event
 
 logger = logging.getLogger(__name__)
 
 
-async def create_user(user_model: UserCreateSchema, fetch_ens: bool = False) -> User:
-    user = User(**user_model.dict())
-    user.wallet_address = checksum_address(user_model.wallet_address)
-    if not user_model.display_name:
-        display_name = await get_wallet_short_name(address=user_model.wallet_address, check_ens=fetch_ens)
-        user.display_name = display_name
-    await user.commit()
-    return user
+async def create_user(user_model: UserCreateSchema) -> User:
+    user_model.wallet_address = checksum_address(user_model.wallet_address)
+    return await create_item(item=user_model, result_obj=User, user_field=None)
 
 
 async def get_user_by_wallet_address(wallet_address: str) -> Union[User, APIDocument]:

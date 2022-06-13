@@ -9,6 +9,7 @@ from app.models.base import APIDocument
 class User(APIDocument):
     display_name = fields.StrField()
     wallet_address = fields.StrField()
+    ens_domain = fields.StrField()
     email = fields.StrField()
     pfp = fields.DictField()
     description = fields.StrField()

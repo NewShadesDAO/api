@@ -77,6 +77,23 @@ class TestUserRoutes:
         assert json_response["description"] == data["description"]
 
     @pytest.mark.asyncio
+    async def test_update_user_ens_domain(
+        self, app: FastAPI, db: Database, authorized_client: AsyncClient, server: Server
+    ):
+        response = await authorized_client.get("/users/me")
+        assert response.status_code == 200
+        json_response = response.json()
+        assert "ens_domain" in json_response
+        assert json_response["ens_domain"] is None
+
+        data = {"ens_domain": "vitalik.eth"}
+        response = await authorized_client.patch("/users/me", json=data)
+        assert response.status_code == 200
+        json_response = response.json()
+        assert "ens_domain" in json_response
+        assert json_response["ens_domain"] == data["ens_domain"]
+
+    @pytest.mark.asyncio
     async def test_update_user_profile_display_name_empty(
         self, app: FastAPI, db: Database, authorized_client: AsyncClient, server: Server
     ):
